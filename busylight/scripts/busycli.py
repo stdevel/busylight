@@ -1,17 +1,18 @@
 #!/usr/bin/env python
-#
-#
+"""
+This script controls the Busylight device via CLI
+"""
 import os
-import click
 import logging
 import logging.config
 import socket
 import socketserver
+import click
 import busylight
 
 # Setup logger
-logger = logging.getLogger(__name__)
-_log_filename = os.path.expanduser('~/busylight.log')
+LOGGER = logging.getLogger(__name__)
+_LOG_FILENAME = os.path.expanduser('~/busylight.log')
 
 def configure_logging(verbose, logfn):
     """
@@ -33,7 +34,7 @@ def configure_logging(verbose, logfn):
         'disable_existing_loggers': False,
         'formatters': {
             'simple': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'}},
+                'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'}},
         'handlers': {
             'console': {
                 'class': 'logging.StreamHandler',
@@ -75,19 +76,22 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
-        logger.info("Received command from {}".format(self.client_address[0]))
+        LOGGER.info('Received command from %s', self.client_address[0])
         command = self.data.decode('utf8')
-        logger.info(command)
+        LOGGER.info(command)
 
         if command == 'done':
             busylight.crazy_lights(wait_time=0.1)
         elif command == 'clear':
             busylight.clear_bl()
         else:
-            logger.warn(f'unknown command: {command}')
+            LOGGER.warning('unknown command: %s', command)
 
 
 def get_ip():
+    """
+    Returns the current IP address
+    """
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     ip_addr = s.getsockname()[0]
@@ -96,40 +100,43 @@ def get_ip():
 
 
 @click.group()
-@click.option('-l','--logfn', help='log file path', default=_log_filename,
+@click.option('-l', '--logfn', help='log file path', default=_LOG_FILENAME,
               type=click.Path())
 @click.option('-v', '--verbose', help="SHOW ME WHAT YOU GOT!", count=True)
 def cli(logfn, verbose):
+    """
+    Method to configure logging
+    """
     configure_logging(verbose, logfn)
 
 @cli.command()
-@click.option('-b','--blink', type=float, default=1)
+@click.option('-b', '--blink', type=float, default=1)
 def test(blink):
     """
-    CLI tool to write to busylight 
+    Method to test the Busylight
     """
     busylight.crazy_lights(wait_time=blink)
 
 @cli.command()
-@click.option('-w','--wait', type=float, default=1)
-@click.option('-s','--steps', type=int, default=100)
+@click.option('-w', '--wait', type=float, default=1)
+@click.option('-s', '--steps', type=int, default=100)
 def rainbow(wait, steps):
     """
-    CLI tool to write to busylight 
+    Displays a color rainbow
     """
     busylight.smooth_rainbow(wait_time=wait, steps=steps)
 
 @cli.command()
 def clear():
     """
-    CLI tool to write to busylight an "empty" buffer, removes all light/sound. 
+    CLI tool to write to busylight an "empty" buffer, removes all light/sound.
     """
     busylight.clear_bl()
 
 @cli.command()
-@click.option('-r','--red', type=int, default=0)
-@click.option('-g','--green', type=int, default=0)
-@click.option('-b','--blue', type=int, default=0)
+@click.option('-r', '--red', type=int, default=0)
+@click.option('-g', '--green', type=int, default=0)
+@click.option('-b', '--blue', type=int, default=0)
 @click.option('--blink', type=int, default=0)
 def show(red, green, blue, blink):
     """
@@ -140,8 +147,8 @@ def show(red, green, blue, blink):
     bl.write()
 
 @cli.command()
-@click.option('-t','--tone', default='openoffice')
-@click.option('--vol',type=int, default=3)
+@click.option('-t', '--tone', default='openoffice')
+@click.option('--vol', type=int, default=3)
 def say(tone, vol):
     """
     CLI tool to write signal sounds to busylight. Tone options:

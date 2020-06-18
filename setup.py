@@ -1,6 +1,9 @@
+"""
+This script installs busylight
+"""
 from setuptools import setup, find_packages
 
-print('PACKAGES: ',find_packages())
+print('PACKAGES: ', find_packages())
 
 # Parse the version from the module.
 with open('busylight/__init__.py') as f:
@@ -15,16 +18,16 @@ setup(name='busylight',
       version=version,
       description='Package to interact with a Busylight',
       classifiers=[
-        'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.6',
       ],
       keywords='busylight hid',
       author='Ryan McCarthy',
       author_email='ryan@mcginger.net',
       license='MIT License',
       install_requires=[
-        'click',
-        'numpy',
-        'hidapi',
+          'click',
+          'numpy',
+          'hidapi',
       ],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
